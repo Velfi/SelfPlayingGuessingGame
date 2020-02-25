@@ -2,10 +2,9 @@ mod game_state;
 
 use game_state::GameState;
 use std::process::Stdio;
-use tokio::{io::BufReader, prelude::*, process::Command};
+use std::{io::BufReader, io::prelude::*, process::Command};
 
-#[tokio::main]
-async fn main() {
+fn main() {
     let mut cmd = Command::new("target/debug/game")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
@@ -18,13 +17,13 @@ async fn main() {
     let mut counter: usize = 0;
 
     loop {
-        buf_reader.read_line(&mut buf_string).await.unwrap();
+        buf_reader.read_line(&mut buf_string).unwrap();
         print!("{}", buf_string);
 
         match GameState::new_from_string(&buf_string) {
             GameState::InputGuess => {
                 let guess = format!("{}\n", counter).into_bytes();
-                stdin.write_all(&guess).await.unwrap();
+                stdin.write_all(&guess).unwrap();
                 counter += 1;
             }
             GameState::YouWin => break,
