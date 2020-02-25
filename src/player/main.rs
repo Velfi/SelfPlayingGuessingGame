@@ -12,27 +12,23 @@ async fn main() {
         .spawn()
         .expect("cannot spawn");
 
-    let stdout = cmd.stdout.take().expect("no stdout");
+    let mut buf_reader = BufReader::new(cmd.stdout.take().expect("no stdout"));
     let mut stdin = cmd.stdin.take().expect("no stdin");
-    let mut buf_reader = BufReader::new(stdout);
     let mut buf_string = String::new();
-
     let mut counter: usize = 0;
 
     loop {
         buf_reader.read_line(&mut buf_string).await.unwrap();
-        let game_state = GameState::new_from_string(&buf_string);
+        print!("{}", buf_string);
 
-        match game_state {
+        match GameState::new_from_string(&buf_string) {
             GameState::InputGuess => {
-                print!("{}", buf_string);
-
                 let guess = format!("{}\n", counter).into_bytes();
-                stdin.write(&guess).await.unwrap();
+                stdin.write_all(&guess).await.unwrap();
                 counter += 1;
             }
             GameState::YouWin => break,
-            _ => print!("{}", &buf_string),
+            _ => (),
         };
 
         buf_string.clear();
